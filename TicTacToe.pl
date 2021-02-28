@@ -77,33 +77,55 @@ game() :- emptyBoard3x3(Board), play(Board).
 
 /** 
  * 1. - first available field
-  * aiMove(Board, I) :- canMove(Board, I), !. */
+ */
+%  aiMove(Board, I) :- canMove(Board, I), !.
 
 /** 
  * 2. - presumably AI and player make their best moves,
- *      algorithm considers all alternatives
+ *      NegMax algorithm considers all alternatives 
+ *      git tag: all_alternatives_search
  */
- aiMove(Board, I) :-
-    search(Board, ai, I, _), !.
+%  aiMove(Board, I) :-
+%     search(Board, ai, I, _), !.
 
-% estimate max score for all available moves
-exploreMoves(_, _, [], []).
-exploreMoves(Board, Player, [Move| Moves], [Score|Scores1]) :-
-    exploreMove(Board, Player, Move, Score),
-    exploreMoves(Board, Player, Moves, Scores1).
+/**
+ * 3. - cuts off branches that are bound to have 
+ *      worse result than already got
+ *      NegMax + ALphaBeta 
+ */
+aiMove(Board, I) :-
+     search(Board, ai, -10000, 10000, I, _), !.
+/**
+ * estimate max score for all available moves 
+ * if for some move of these moves 
+ * MaxPlayerScore will be >= MaxOpponentScore, than
+ * BestScore for this player will also be >= MaxOpponentScore
+ * and when we return one step back Opponent will definitely
+ * not pick this branch,
+ * as it tries to minimize next Player score,
+ * so we can already cut it off
+ */
+exploreMoves(_, _, _, _, [], []).
+exploreMoves(_, _, MaxPlayer, MaxOpponent, _, []) :-
+    MaxPlayer >= MaxOpponent, !.
+
+exploreMoves(Board, Player, MaxPlayer, MaxOpponent, [Move| Moves], [Score|Scores1]) :-
+    exploreMove(Board, Player, MaxPlayer, MaxOpponent, Move, Score),
+    MaxPlayer1 is max(MaxPlayer, Score),
+    exploreMoves(Board, Player, MaxPlayer1, MaxOpponent, Moves, Scores1).
 
 /**
  * estimate max score on this board:
  * make move -> create next virtual board
  * search for best opponent score for new board
  * the less is Opponent`s score the greater is Player`s score 
+ * changing sign of scores, as for nect score() Player (Opponent) 
+ * its benefitial score must always be positive and loss - negative
  */
-exploreMove(Board, Player, Move, Score) :-
+exploreMove(Board, Player, MaxPlayer, MaxOpponent, Move, -ScoreNeg) :-
     makeMove(Board, Move, Player, Board1),
-    opponent(Player, Player2),
-    search(Board1, Player2, _, ScoreNeg),
-    Score is -ScoreNeg.
-
+    opponent(Player, Opponent),
+    search(Board1, Opponent, -MaxOpponent, -MaxPlayer, _, ScoreNeg).
 
 /**
  * If board is filled
@@ -111,7 +133,7 @@ exploreMove(Board, Player, Move, Score) :-
  * as it is checked beforehand that ai will have at least one field available
  * it wont ever be initial search() call
  */
-search(Board, Player, _, BestScore) :-
+search(Board, Player, _, _, _, BestScore) :-
     filled(Board),
     ( wins(Board, Player) -> BestScore is 10 ;
     ( opponent(Player, Player2), wins(Board, Player2) -> BestScore is -10;
@@ -124,9 +146,9 @@ search(Board, Player, _, BestScore) :-
  * find index of max score
  * get move that led to this score
  */
-search(Board, Player, BestMove, BestScore) :-
+search(Board, Player, MaxPlayer, MaxOpponent, BestMove, BestScore) :-
     findall(I, canMove(Board, I), Moves),
-    exploreMoves(Board, Player, Moves, Scores), 
+    exploreMoves(Board, Player, MaxPlayer, MaxOpponent, Moves, Scores), 
     max_member(BestScore, Scores),
     nth0(I, Scores, BestScore), 
     nth0(I, Moves, BestMove).
