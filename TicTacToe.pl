@@ -2,7 +2,7 @@
  * Tic-Tac-Toe 3x3
  */
 % player = hu, compputer = ai, empty place = 0
-% use fill(9) before starting game 
+% use fill(8) before starting game 
 
 /** Helper functions */
 replace(List1, Index, Elem, List2) :-
@@ -28,11 +28,11 @@ wins(State, E) :-
 
 emptyBoard3x3([0,0,0,0,0,0,0,0,0]).
 
-fill(0) :- !.
+fill(-1) :- !.
 fill(X) :- asserta(i(X)), X1 is X - 1,  fill(X1).
 
 /** Basic actions */
-canMove(Board, I) :- nth0(I, Board, 0).
+canMove(Board, I) :- i(I), nth0(I, Board, 0).
 
 makeMove(Board, I, New, Board1) :- replace(Board, I, New, Board1).
 
@@ -41,13 +41,13 @@ opponent(ai, hu).
 
 loses(Board, P1) :- opponent(P1, P2), wins(Board, P2 ).
 
-tie(Board) :- not(member(0, Board)).
+filled(Board) :- not(member(0, Board)).
 
 whowon(hu) :- writeln('You win').
 whowon(ai) :- writeln('Computer wins'). 
 checkEndGame(Board, P) :-
     (wins(Board, P) -> whowon(P),  fail, !  ;
-    (tie(Board) -> writeln('Its a tie'), fail, !  ; 1=1 )).
+    (filled(Board) -> writeln('Its a tie'), fail, !  ; 1=1 )).
 
 /** User interaction */
 getVal(Prompt, Val) :-
@@ -66,15 +66,75 @@ showBoard(Board) :-
 /** Game setup */
 play(Board) :-
     showBoard(Board), huMove(Board, Ihu), makeMove(Board, Ihu, hu, Board1),
-    checkEndGame(Board1, hu),
+    checkEndGame(Board1, hu), !,
     aiMove(Board1, Iai), makeMove(Board1, Iai, ai, Board2),
-    checkEndGame(Board2, ai),
+    checkEndGame(Board2, ai), !, 
     play(Board2).
 
 game() :- emptyBoard3x3(Board), play(Board).
 
-/** Ai move algorythm */
+/** Ai move algorithm */
 
-% 1. - first available field
-% aiMove(Board, I) :- i(I), canMove(Board, I), !.
+/** 
+ * 1. - first available field
+  * aiMove(Board, I) :- canMove(Board, I), !. */
+
+/** 
+ * 2. - presumably AI and player make their best moves,
+ *      algorithm considers all alternatives
+ */
+ aiMove(Board, I) :-
+    search(Board, ai, I, _), !.
+
+% estimate max score for all available moves
+exploreMoves(_, _, [], []).
+exploreMoves(Board, Player, [Move| Moves], [Score|Scores1]) :-
+    exploreMove(Board, Player, Move, Score),
+    exploreMoves(Board, Player, Moves, Scores1).
+
+/**
+ * estimate max score on this board:
+ * make move -> create next virtual board
+ * search for best opponent score for new board
+ * the less is Opponent`s score the greater is Player`s score 
+ */
+exploreMove(Board, Player, Move, Score) :-
+    makeMove(Board, Move, Player, Board1),
+    opponent(Player, Player2),
+    search(Board1, Player2, _, ScoreNeg),
+    Score is -ScoreNeg.
+
+
+/**
+ * If board is filled
+ * then evaluate winner
+ * as it is checked beforehand that ai will have at least one field available
+ * it wont ever be initial search() call
+ */
+search(Board, Player, _, BestScore) :-
+    filled(Board),
+    ( wins(Board, Player) -> BestScore is 10 ;
+    ( opponent(Player, Player2), wins(Board, Player2) -> BestScore is -10;
+      BestScore is 0)).
+
+/**
+ * find all available moves
+ * get max possible scores after each move
+ * find max score
+ * find index of max score
+ * get move that led to this score
+ */
+search(Board, Player, BestMove, BestScore) :-
+    findall(I, canMove(Board, I), Moves),
+    exploreMoves(Board, Player, Moves, Scores), 
+    max_member(BestScore, Scores),
+    nth0(I, Scores, BestScore), 
+    nth0(I, Moves, BestMove).
+
+
+
+
+
+
+
 
