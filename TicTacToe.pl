@@ -3,14 +3,7 @@
  */
 % player = hu, compputer = ai, empty place = 0
 % use fill(8) before starting game 
-
-/** Helper functions */
-replace(List1, Index, Elem, List2) :-
-    replace(List1, Index, Elem, List2, 0).
-
-replace([A| List1], Index, Elem, List2, IndexCur) :-
-    ( IndexCur = Index ->  List2 = [Elem | List1] ;
-       Index1 is IndexCur + 1,  replace(List1, Index, Elem, List21, Index1),  List2 = [A | List21] ).
+:- consult(initData).
 
 /** Simple implementation */
 
