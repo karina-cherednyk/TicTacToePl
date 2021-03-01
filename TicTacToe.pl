@@ -122,10 +122,12 @@ exploreMoves(Board, Player, MaxPlayer, MaxOpponent, [Move| Moves], [Score|Scores
  * changing sign of scores, as for nect score() Player (Opponent) 
  * its benefitial score must always be positive and loss - negative
  */
-exploreMove(Board, Player, MaxPlayer, MaxOpponent, Move, -ScoreNeg) :-
+exploreMove(Board, Player, MaxPlayer, MaxOpponent, Move, Score) :-
     makeMove(Board, Move, Player, Board1),
     opponent(Player, Opponent),
-    search(Board1, Opponent, -MaxOpponent, -MaxPlayer, _, ScoreNeg).
+    MaxOpponentNeg is -MaxOpponent, MaxPlayerNeg is -MaxPlayer,
+    search(Board1, Opponent, MaxOpponentNeg, MaxPlayerNeg, _, ScoreNeg),
+    Score is -ScoreNeg.
 
 /**
  * If board is filled
