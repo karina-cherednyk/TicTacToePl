@@ -10,10 +10,10 @@ const computeScoreIndex = (row, col, tooltip) => {
     return computeScore;
 } 
 const setMove = (cell, r, c) => {
-    console.log(r+','+c)
     if(!cell.classList.contains('cross')){
         cell.classList.add('cross')
         b.board[r * b.c + c] = 'x'
+        changeColors()
     }
 }
 

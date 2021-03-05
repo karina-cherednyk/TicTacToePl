@@ -44,7 +44,8 @@ evalMove(B, Mv, Pl, Score) :-
     evalMove(B, Mv, Pl, d(1, 1), ScDNW),  % diagonally North-West
     evalMove(B, Mv, Pl, d(1, -1), ScDNE), % diagonally North-East
     Score is ScH + ScV + ScDNW + ScDNE.
-    
+
+makeEvalMove(B, Mv, _, 0) :- not(getCell(B,Mv,0)), !.
 makeEvalMove(B, Mv, Pl, Score) :-
     makeMove(B,Mv,Pl,B1),
     evalMove(B1,Mv,Pl,Score).

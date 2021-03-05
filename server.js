@@ -14,6 +14,7 @@ app.get('/', (_, res) => {
 
 app.post('/pl', (req, res) => {
     const cmnd = `swipl -f ./TicTacToeScore.pl -g "${req.body.query},${req.body.goals},halt"`
+    //console.log(cmnd)
     exec(cmnd, function (_, stdOut, _) {
        res.send(stdOut)
     });
