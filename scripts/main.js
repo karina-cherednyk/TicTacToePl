@@ -1,21 +1,21 @@
+let tips = false;
+let tipElems = Array.from(document.getElementsByClassName('tooltiptext'))
+
 const toggleTips = (e) => {
     let b = e.target;
-    b.innerText = b.innerText == 'Show tips' ? 'Hide tips' : 'Show tips'    
+    tips = !tips  
+    b.innerText = b.innerText == tips ? 'Hide tips' : 'Show tips'  
+    tipElems.forEach(x => x.style.display = tips ? 'block' : 'none')
 }
 
 const computeScoreIndex = (row, col, tooltip) => {
     const computeScore = async () => {
-        score(row,col, tooltip)
+        if(tips)
+            score(row,col, tooltip)
     }   
     return computeScore;
 } 
-const setMove = (cell, r, c) => {
-    if(!cell.classList.contains('cross')){
-        cell.classList.add('cross')
-        b.board[r * b.c + c] = 'x'
-        changeColors()
-    }
-}
+
 
 window.onload = () => {
     document.getElementById('toggleTips').onclick = toggleTips;
@@ -29,10 +29,11 @@ window.onload = () => {
             let tt   = document.createElement('span')
             cell.classList.add('tooltip')
             tt.classList.add('tooltiptext')
+            tt.style.display = 'none'
             if(r == 0) tt.classList.add('top-tooltip')
             cell.appendChild(tt)
             cell.onmouseover = computeScoreIndex(r,c, tt)
-            cell.onclick = (e) => setMove(e.target, r,c)
+            cell.onclick = (e) => setHuMove(e.target, r,c)
             row.appendChild(cell)
         }
     }

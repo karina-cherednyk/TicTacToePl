@@ -36,7 +36,9 @@ evalMove(B, Mv, Pl, d(DR, DC), Score) :-
     count(B, Mv, d(DR, DC), Pl, 5, n(0,NR), m(0, MR), k(0,KR)),
     count(B, Mv, d(DRNeg,DCNeg), Pl, 5, n(0,NL), m(0, ML), k(0,KL)),
     N is NR + NL - 1, M is MR + ML - 1, K is KR + KL,
-    ( M < 5 -> Score=0 ; Score is 10^N * (M + 1) * 2*(K + 1)).
+    ( M < 5 -> Score=0 ; 
+    ( N = 5 -> Score is 10^7 ;
+    ( Score is 10^N * (M + 1) * 2*(K + 1)) )).
 
 evalMove(B, Mv, Pl, Score) :-
     evalMove(B, Mv, Pl, d(0, 1), ScH),    % horizontally
@@ -58,7 +60,11 @@ emptyNeighbor(B, Pl,  m(R1, C1)) :-
 
 
 allMoves(B,Pl,Res) :-
-    setof(M1, emptyNeighbor(B, Pl, M1), Res).
+    opp(Pl,Op),
+    ( setof(M1, emptyNeighbor(B, Pl, M1), ResPl), !; ResPl=[]),
+    ( setof(M1, emptyNeighbor(B, Op, M1), ResOp), !; ResOp=[]),
+    append(ResPl, ResOp, Res).
+    
 
 
 
@@ -66,13 +72,20 @@ makeMove(b(B,W,H), m(R,C), Pl, b(B1,W,H)) :-
     I is (R-1) * W + (C-1),
     replace(B, I, Pl, B1).
 
+moveTotalScore(B,Mv,Pl,Score) :-
+    opp(Pl,Op),
+    makeEvalMove(B,Mv,Pl, ScorePl),
+    makeEvalMove(B,Mv,Op, ScoreOp),
+    ( ScorePl >= 10^7-> Score is 10^10 ;
+                        Score is ScorePl + ScoreOp ).
+
 mapMoves(_, _, [], []).
 mapMoves(B, Pl, [Mv|Moves], Res) :- 
-    makeMove(B, Mv, Pl, B1),
-    evalMove(B1,Mv,Pl, Score),
+    moveTotalScore(B,Mv,Pl,Score),
     ScoreNeg is -Score, % negation for keysort
     mapMoves(B, Pl, Moves, Tail),
-    ( Score is 0 -> Res=Tail; Res=[ScoreNeg-Mv|Tail] ).
+    ( Score is 0 -> Res=Tail; 
+                    Res=[ScoreNeg-Mv|Tail] ).
     
 
 bestMoves(B, Pl, SortedMoves):-

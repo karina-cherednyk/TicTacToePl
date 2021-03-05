@@ -28,9 +28,10 @@ cell.null::after {
     position: absolute;
     bottom: 0;
     font-size: calc( var(--cellSize) * 0.8 );
-    content: "\20DD"; 
-    color: #FFF;
+    content: "\25EF"; 
+    left: 0.5vmin;
     text-align: center;
+    -webkit-text-stroke-width: 10px;
 }
 row {
     display: block;
