@@ -45,6 +45,9 @@ evalMove(B, Mv, Pl, Score) :-
     evalMove(B, Mv, Pl, d(1, -1), ScDNE), % diagonally North-East
     Score is ScH + ScV + ScDNW + ScDNE.
     
+makeEvalMove(B, Mv, Pl, Score) :-
+    makeMove(B,Mv,Pl,B1),
+    evalMove(B1,Mv,Pl,Score).
 
 emptyNeighbor(B, Pl,  m(R1, C1)) :-
     getCell(B,m(R,C),Pl),        % iterate over every x cell

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="styles/main.css" >
+    <link rel="stylesheet" href="styles/tooltip.css" />
+</head>
+<body>
+   
+    <div id='header'>
+        <button id='toggleTips' >Show tips</button>
+        <p>Total score:</p>
+    </div>
+    <board id='board'></board>
+   
+    <script>
+        let b = {
+            board: [],
+            r: 10,
+            c: 10
+        }
+        function initBoard(){
+            for(let i=0; i<b.r*b.c; ++i)
+                b.board.push(0)
+        }
+        initBoard()
+        const boardPl = () =>  `b([${b.board.join(',')}], ${b.r}, ${b.c})`
+
+        function score(R, C, elem){
+            // evalMove(B, Mv, Pl, Score) 
+            let query = `{
+                "query": "makeEvalMove(${boardPl()},m(${R+1},${C+1}),x, ScorePlayer), makeEvalMove(${boardPl()},m(${R+1},${C+1}),x, ScoreAI)",
+                "goals": "writeln(ScorePlayer), writeln(ScoreAI)"
+                }`
+            let xhttp = new XMLHttpRequest()
+            xhttp.open("POST", "/pl", true)
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            xhttp.send(query)
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let arr = this.responseText.split('\n')
+                    elem.innerText = `User score:${arr[0]}\nAI score:${arr[1]}`
+                }
+            };
+           
+        }
+        
+    </script>
+     <script src="scripts/main.js"></script>
+</body>
+
+</html>
