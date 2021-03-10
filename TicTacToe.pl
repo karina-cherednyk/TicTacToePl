@@ -94,7 +94,7 @@ game() :- emptyBoard10x10(Board), play(Board).
  *      NegMax + ALphaBeta 
  */
 aiMove(Board, I, Score) :-
-     search(Board, 1, 2, o, -10000, 10000, I, Score), !.
+     search(Board, 1, 4, o, -10000, 10000, I, Score), !.
 /**
  * estimate max score for all available moves 
  * if for some move of these moves 

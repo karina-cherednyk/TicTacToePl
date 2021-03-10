@@ -2,9 +2,10 @@ let tips = false;
 let tipElems = Array.from(document.getElementsByClassName('tooltiptext'))
 
 const toggleTips = (e) => {
+    
     let b = e.target;
     tips = !tips  
-    b.innerText = b.innerText == tips ? 'Hide tips' : 'Show tips'  
+    b.innerText = tips ? 'Hide tips' : 'Show tips'  
     tipElems.forEach(x => x.style.display = tips ? 'block' : 'none')
 }
 
